@@ -58,8 +58,8 @@ void interface_Register(pRuntimeData data) {
     NORMAL_INFO(
         "Please input user name with only letters, number and "
         "underline");
-    ATTEMP(GetInput(registered_account.username, maximum_name_length,
-                    PredefinedInputCheckNormal));
+    INPUT(registered_account.username, maximum_name_length,
+                    PredefinedInputCheckNormal);
     if (DataCheck(USER_LIST_DIR) == DATA_PASSED) {
         switch (DataBlockLocate(USER_LIST_DIR, USER_ID_INDEX,
                                 registered_account.username, &begin, &end)) {
@@ -81,11 +81,15 @@ void interface_Register(pRuntimeData data) {
     NORMAL_INFO(
         "Please input user password with only letters, "
         "number and underline.");
-    ATTEMP(GetInput(registered_account.password, maximum_password_length,
-                    PredefinedInputCheckNormal));
+    INPUT(registered_account.password, maximum_password_length,
+                    PredefinedInputCheckNormal);
     NORMAL_INFO("Please confirm your password");
-    ATTEMP(GetInput(input_buffer, maximum_password_length, NULL));
-    if (!strcmp(registered_account.password, input_buffer)) {
+    INPUT(input_buffer, maximum_password_length, NULL);
+    if (strcmp(registered_account.password, input_buffer)) { /*confirm failed*/
+        ERROR_INFO("failed to confirm.");
+        JUMP_TO_MARK();
+    } else {
+        /*decide user type*/
         INPUT_PROMPT("Are you a receptionist or manager?(r/m)");
         INPUT(input_buffer, 1, NULL);
         switch (input_buffer[0]) {
@@ -183,7 +187,7 @@ void interface_Register(pRuntimeData data) {
         NORMAL_INFO(
             "Do you want to directly login or go back to "
             "start?(l/s)");
-        ATTEMP(GetInput(input_buffer, 1, NULL));
+        INPUT(input_buffer, 1, NULL);
         switch (input_buffer[0]) {
             case 'l':
                 memcpy(&(data->user), &registered_account, sizeof(sUser));
@@ -194,10 +198,6 @@ void interface_Register(pRuntimeData data) {
                 ERROR_INFO("Input must be l or s!");
                 JUMP_TO_MARK();
         }
-    } else {
-        /*confirm failed*/
-        ERROR_INFO("failed to confirm.");
-        JUMP_TO_MARK();
     }
 #undef OUTPUT_NAME
 }
