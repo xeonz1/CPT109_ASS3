@@ -154,11 +154,25 @@ void interface_Register(pRuntimeData data) {
                         /*no manager*/
                         break;
                 }
+                /*qualified*/
                 registered_account.type = USER_MANAGER;
                 break;
             default:
                 ERROR_INFO("input must be r or m!");
                 GOTO_MARK();
+        }
+        /*write registered user to disk*/
+        found_user_db = CreateUserDataBlock();
+        UserWrite(&registered_account, found_user_db);
+        switch (DataBlockAppend(USER_LIST_DIR, found_user_db->item,
+                                found_user_db->item_number)) {
+            case DATA_UNOPENED:
+                DestructDataBlockContainer(found_user_db);
+                ERROR_INFO("check user list status!");
+                SWITCH(interface_StartPage);
+            case DATA_PASSED:
+                DestructDataBlockContainer(found_user_db);
+                break;
         }
 
         SET_MARK();
