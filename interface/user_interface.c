@@ -6,11 +6,46 @@
 #include "file_io.h"
 #include "hotel_macros.h"
 #include "input_control.h"
-/**
- * @brief interface of user login
- *
- * @param data runtime data
- */
+
+void interface_StartPage(pRuntimeData data) {
+#define OUTPUT_NAME "StartPage"
+    static char input_buffer[2];
+    /*set main interface for exceptional jump back*/
+    data->main_interface = interface_StartPage;
+    SET_MARK();
+    system("cls");
+    /*print prompt*/
+    puts("\t+---------------------+");
+    puts("\t|        Welcome!     |");
+    puts("\t|     1:  Sign up     |");
+    puts("\t|     2:  Log in      |");
+    puts("\t|     3:  Exit        |");
+    puts("\t+---------------------+");
+    /*get input*/
+    INPUT_PROMPT("option");
+    INPUT(input_buffer, 1, NULL);
+    /*check input option*/
+    switch (input_buffer[0]) {
+        case '1':
+            /*user chooses to register*/
+            SWITCH(interface_Register);
+            break;
+        case '2':
+            /*user chooses to login*/
+            SWITCH(interface_Login);
+            break;
+        case '3':
+            NORMAL_INFO("Farewell");
+            Delay(1000);
+            return;
+        default:
+            /*illegal input*/
+            ERROR_INFO("Input should be 1, 2 or 3!");
+            GOTO_MARK();
+    }
+#undef OUTPUT_NAME
+}
+
 void interface_Login(pRuntimeData data) {
     static char input_buffer[maximum_name_length + 1];
     fpos_t begin, end;
