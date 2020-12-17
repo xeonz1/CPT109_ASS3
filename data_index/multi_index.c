@@ -243,19 +243,20 @@ void InitializeCache(pMultiIndexCache db,
     FILE* data;
     int update_list, corrupted_flag, cnt;
     /*1. read all the data*/
-    data = fopen(db->dir, "r");
-    if (data == NULL) return;
-    while (1) {
-        buffer = constructor();
-        if (DataBlockParseStream(data, buffer->item, buffer->item_number) ==
-            DATA_PASSED)
-            UploadNewDataBlockToCache(db, buffer);
-        else {
-            DestructDataBlockContainer(buffer);
-            break;
+    if (DataCheck(db->dir) == DATA_PASSED) {
+        data = fopen(db->dir, "r");
+        while (1) {
+            buffer = constructor();
+            if (DataBlockParseStream(data, buffer->item, buffer->item_number) ==
+                DATA_PASSED)
+                UploadNewDataBlockToCache(db, buffer);
+            else {
+                DestructDataBlockContainer(buffer);
+                break;
+            }
         }
+        fclose(data);
     }
-    fclose(data);
     /*2. check log*/
     switch (corrupted_flag = setjmp(corrupted_jmp)) {
         case 0:
@@ -300,16 +301,8 @@ void InitializeCache(pMultiIndexCache db,
             return;
     }
     /*log recover*/
-    db->log = fopen(db->log_dir, "r");
-    if (db->log == NULL) { /*no log files, read all data*/
-        db->log_enable = 1;
-        db->log = fopen(db->log_dir, "w");
-    } else if (fgetc(db->log) == EOF) {
-        fclose(db->log);
-        db->log = fopen(db->log_dir, "w");
-        db->log_enable = 1;
-    } else { /*log file exist*/
-        rewind(db->log);
+    if (DataCheck(db->log_dir) == DATA_PASSED) { /*log file exist*/
+        db->log = fopen(db->log_dir, "r");
         while (fgetc(db->log) != EOF) { /*read the log file one by one*/
             fseek(db->log, -1, SEEK_CUR);
             if (fgetc(db->log) != '<') longjmp(corrupted_jmp, 1);
@@ -382,9 +375,9 @@ void InitializeCache(pMultiIndexCache db,
             current = current->last;
         }
         fclose(data);
-        db->log = fopen(db->log_dir, "w");
-        db->log_enable = 1;
     }
+    db->log = fopen(db->log_dir, "w");
+    db->log_enable = 1;
 }
 
 void CacheWriteLog(pMultiIndexCache db, char op, ...) {

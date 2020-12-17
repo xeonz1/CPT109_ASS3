@@ -33,6 +33,14 @@ void interface_UserCenter(pRuntimeData data);
  * @param data runtime data
  */
 void interface_UserDelete(pRuntimeData data);
+
+/**
+ * @brief interface of change user type
+ * 
+ * @param data runtime data
+ */
+void interface_UserChangeType(pRuntimeData data);
+
 /**
  * @brief interface of change user password
  * 
