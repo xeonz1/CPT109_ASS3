@@ -20,6 +20,9 @@ typedef struct RuntimeData {
     void (*next_interface)(struct RuntimeData*);
     jmp_buf scheduler;
     jmp_buf mark;
+    jmp_buf sub_mark;
+    char mgr_authorized_flag;
+    int vip_cnt;
 } sRuntimeData;
 
 typedef sRuntimeData* pRuntimeData;
@@ -32,6 +35,12 @@ typedef sRuntimeData* pRuntimeData;
 #define GOTO_MARK() \
     { longjmp(RUNTIME_DATA->mark, 0); }
 
+#define SET_SUB_MARK() \
+    { setjmp(RUNTIME_DATA->mark); }
+
+#define GOTO_SUB_MARK() \
+    { longjmp(RUNTIME_DATA->sub_mark, 0); }
+
 #define SET_SCEDULER(p_rt) \
     { setjmp(p_rt->scheduler); }
 
@@ -43,6 +52,10 @@ typedef sRuntimeData* pRuntimeData;
 
 #define SET_MAIN(where) \
     { RUNTIME_DATA->main_interface = where; }
+
+/*last mark*/
+#define SET_LAST(last) \
+    { RUNTIME_DATA->last = RUNTIME_DATA->mark; }
 
 #define GOTO_MAIN()                                                  \
     {                                                                \
@@ -67,6 +80,27 @@ typedef sRuntimeData* pRuntimeData;
             case INPUT_COMMAND_BACK: /*input is "!", forced jump to main \
                                         interface*/                      \
                 GOTO_MAIN();                                             \
+        }                                                                \
+    }
+#define SUB_INPUT(dst, len, callback)                                    \
+    {                                                                    \
+        switch (GetInput(dst, len, callback)) {                          \
+            case INPUT_PASSED: /*input passed*/                          \
+                break;                                                   \
+            case INPUT_NON: /*no input*/                                 \
+                ERROR_INFO("NON INPUT");                                 \
+                GOTO_SUB_MARK();                                             \
+            case INPUT_ILLEGAL: /*input illegal*/                        \
+                ERROR_INFO("INPUT ILLEGAL");                             \
+                GOTO_SUB_MARK();                                             \
+            case INPUT_OVERFLOW: /*input too long*/                      \
+                ERROR_INFO("INPUT TOO LONG");                            \
+                GOTO_SUB_MARK();                                             \
+            case INPUT_COMMAND_BACK: /*input is "!", forced jump to main \
+                                        interface*/                      \
+                GOTO_MAIN();                                             \
+            case INPUT_COMMAND_LEAVE:                                    \
+                return;                                                  \
         }                                                                \
     }
 

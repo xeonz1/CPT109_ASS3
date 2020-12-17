@@ -32,14 +32,14 @@ pRuntimeData HotelSystemInit() {
     list = data->room_db->data_list_tail;
     while (list != NULL) {
         CreateNewIndex(data->booking_db, list->item[ROOM_ID_INDEX],
-                       ROOM_ID_INDEX, BOOKING_DATE_INDEX,
+                       BOOKING_ROOM_INDEX, BOOKING_DATE_INDEX,
                        GENERATED_INDEX_CMP_LIST(BOOKING_DATE_CMP));
         list = list->last;
     }
     list = data->customer_db->data_list_tail;
     while (list != NULL) {
         CreateNewIndex(data->booking_db, list->item[CUSTOMER_ID_INDEX],
-                       CUSTOMER_ID_INDEX, BOOKING_DATE_INDEX,
+                       BOOKING_CUSTOMER_INDEX, BOOKING_DATE_INDEX,
                        GENERATED_INDEX_CMP_LIST(BOOKING_DATE_CMP));
         list = list->last;
     }

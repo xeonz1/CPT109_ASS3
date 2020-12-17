@@ -48,22 +48,22 @@ void interface_StartPage(pRuntimeData data) {
 
 static void sub_interface_ManagerAuthorization(pRuntimeData data) {
 #define OUTPUT_NAME "ManagerAuthorization"
-
     sUser registered_account, authority;
     pDataBlockContainer found_user_db;
     static char input_buffer[maximum_name_length + 1];
     fpos_t begin, end;
+    data->mgr_authorized_flag = 0;
     switch (DataBlockLocate(USER_LIST_DIR, USER_TYPE_INDEX, USER_MANAGER_STRING,
                             &begin, &end)) {
         case DATA_PASSED:
             /*found manager*/
-            SET_MARK();
+            SET_SUB_MARK();
             system("cls");
             NORMAL_INFO("A manager is required to authorize.")
             /*managers exist, ask to authorize*/
             INPUT_PROMPT("manager user id");
-            INPUT(input_buffer, maximum_name_length,
-                  PredefinedInputCheckNormal);
+            SUB_INPUT(input_buffer, maximum_name_length,
+                      PredefinedInputCheckNormal);
             switch (DataBlockLocate(USER_LIST_DIR, USER_ID_INDEX, input_buffer,
                                     &begin, &end)) {
                 case DATA_UNOPENED:
@@ -72,7 +72,7 @@ static void sub_interface_ManagerAuthorization(pRuntimeData data) {
                     SWITCH(interface_StartPage);
                 case DATA_NON_EXIST:
                     ERROR_INFO("user non exist!");
-                    GOTO_MARK();
+                    GOTO_SUB_MARK();
                 case DATA_PASSED:
                     /*input manager id exists*/
                     found_user_db = CreateUserDataBlock();
@@ -93,15 +93,16 @@ static void sub_interface_ManagerAuthorization(pRuntimeData data) {
                     break;
             }
             INPUT_PROMPT("manager user password");
-            INPUT(input_buffer, maximum_password_length,
-                  PredefinedInputCheckNormal);
+            SUB_INPUT(input_buffer, maximum_password_length,
+                      PredefinedInputCheckNormal);
             if (!strcmp(input_buffer, authority.password)) {
                 NORMAL_INFO("authorized");
+                data->mgr_authorized_flag = 1;
                 Delay(1000);
-                break;
+                return;
             } else {
                 ERROR_INFO("password incorrect");
-                GOTO_MARK();
+                GOTO_SUB_MARK();
             }
         case DATA_UNOPENED:
         case DATA_BROKEN:
@@ -109,7 +110,8 @@ static void sub_interface_ManagerAuthorization(pRuntimeData data) {
             SWITCH(interface_StartPage);
         case DATA_NON_EXIST:
             /*no manager*/
-            break;
+            data->mgr_authorized_flag = 1;
+            return;
     }
 
 #undef OUTPUT_NAME
@@ -169,8 +171,14 @@ void interface_Register(pRuntimeData data) {
                 /*must be authorized by another manager(if exits)*/
                 sub_interface_ManagerAuthorization(data);
                 /*qualified*/
-                registered_account.type = USER_MANAGER;
-                break;
+                if (data->mgr_authorized_flag) {
+                    registered_account.type = USER_MANAGER;
+                    break;
+                } else {
+                    NORMAL_INFO("Not authorized! cannot register as manager");
+                    Delay(1000);
+                    GOTO_MARK();
+                }
             default:
                 ERROR_INFO("input must be r or m!");
                 GOTO_MARK();
@@ -456,4 +464,3 @@ void interface_UserLogout(pRuntimeData data) {
 
 #undef OUTPUT_NAME
 }
-

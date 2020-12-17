@@ -26,7 +26,7 @@ typedef struct Customer {
     CustomerIdType id;
     char name[MAXIMUM_CHAR_LENGTH(maximum_name_length)];
     char telephone[MAXIMUM_CHAR_LENGTH(maximum_tel_length)];
-    int membership;
+    char membership;
     int booking_count;
 } sCustomer;
 

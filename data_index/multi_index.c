@@ -81,14 +81,14 @@ pDataBlockContainer SearchDataBlockInCache(pMultiIndexCache db,
         return NULL;
 }
 
-pTreeNode GetDataOfId(pMultiIndexCache db, const int id_index, char* id,
+pIndexTree GetDataOfId(pMultiIndexCache db, const int id_index, char* id,
                       int ordered_item_index) {
     TmpIndexTreeId tmp_id;
     pTreeNode mapping_tree_node;
     tmp_id = CreateTmpIndexTreeId(id, id_index, ordered_item_index);
     mapping_tree_node = GetMapOf(&tmp_id, db->id_to_index_tree_mapping);
     if (mapping_tree_node != NULL) {
-        return IndexTreeBegin(GET_INDEX(mapping_tree_node));
+        return GET_INDEX(mapping_tree_node);
     } else
         return NULL;
 }

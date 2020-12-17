@@ -4,7 +4,7 @@
 #define maximum_password_length     (63)
 #define maximum_name_length         (63)
 #define maximum_id_length           (12)
-#define maximum_tel_length          (12)
+#define maximum_tel_length          (11)
 #define maximum_membership_length   (12)
 #define maximum_count_length        (6)
 #define MAXIMUM_CHAR_LENGTH(val)    (val+1)

@@ -4,17 +4,24 @@
 #include <stdio.h>
 /**
  * @brief enum type INPUT_FLAG given to InputHandler to deal with
- * 
+ *
  */
 typedef enum {
     INPUT_NON = -1,
     INPUT_PASSED = 0,
     INPUT_ILLEGAL = 1,
     INPUT_OVERFLOW = 2,
-    INPUT_COMMAND_BACK = 3
+    INPUT_COMMAND_BACK = 3,
+    INPUT_COMMAND_LEAVE = 4
 } INPUT_FLAG;
 
 typedef INPUT_FLAG (*InputCallback)(char* src);
+
+#define WAIT_FOR_ENTER()          \
+    {                             \
+        while (getchar() != '\n') \
+            ;                     \
+    }
 
 /**
  * @brief Get the Input from keyboard
@@ -34,6 +41,14 @@ INPUT_FLAG GetInput(char* dst, const int size, InputCallback check);
  * @return INPUT_FLAG
  */
 INPUT_FLAG PredefinedInputCheckNormal(const char* src);
+
+/**
+ * @brief predefined input check: input must be [a-zA-Z]
+ *
+ * @param src the buffer to check
+ * @return INPUT_FLAG
+ */
+INPUT_FLAG PredefinedInputCheckLetter(const char* src);
 
 /**
  * @brief predefined input check: input must be [1-9]

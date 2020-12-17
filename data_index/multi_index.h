@@ -34,7 +34,10 @@ void CloseCache(pMultiIndexCache db);
 void CreateNewIndex(pMultiIndexCache db, char* id, int id_index, int item_index,
                     PriorityCmp maintain_cmp, PriorityCmp query_cmp);
 
-pTreeNode GetDataOfId(pMultiIndexCache db, const int id_index, char* id, int ordered_item_index);
+#include "index_tree.h"
+
+pIndexTree GetDataOfId(pMultiIndexCache db, const int id_index, char* id,
+                      int ordered_item_index);
 void ClearDataOfIdInCache(pMultiIndexCache db, int id, char* text);
 
 void example_initalize_cache();

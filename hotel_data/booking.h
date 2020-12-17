@@ -22,9 +22,11 @@ typedef struct Booking {
     sDate end;
 } sBooking;
 
-#define BOOKING_ITEM_COUNT 4
+#define BOOKING_ITEM_COUNT 7
 #define BOOKING_ID_INDEX 0
-#define BOOKING_DATE_INDEX 7
+#define BOOKING_CUSTOMER_INDEX 2
+#define BOOKING_ROOM_INDEX 3
+#define BOOKING_DATE_INDEX 6
 
 #define BOOKING_DATE_CMP BookingDateCmp
 

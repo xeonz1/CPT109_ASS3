@@ -94,6 +94,6 @@ void example_initalize_cache() {
 }
 int main() {
 
-    example_initalize_cache();
+    /* example_initalize_cache(); */
     return 0;
 }
