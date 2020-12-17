@@ -92,3 +92,5 @@ manual_build/CMakeFiles/multi_index.dir/objects1.rsp
 manual_build/CMakeFiles/multi_index.dir/progress.make
 manual_build/CMakeFiles/multi_index.dir/SBT.c.obj
 manual_build/CMakeFiles/multi_index.dir/time_functionality.c.obj
+.vscode
+.vs

@@ -3,12 +3,10 @@
 
 #include <setjmp.h>
 
-#include "multi_index.h"
-#include "user.h"
-
-#include "time_functionality.h"
 #include "input_control.h"
-
+#include "multi_index.h"
+#include "time_functionality.h"
+#include "user.h"
 
 typedef struct RuntimeData {
     /*data members*/
@@ -26,7 +24,7 @@ typedef struct RuntimeData {
 
 typedef sRuntimeData* pRuntimeData;
 
-#define RUNTIME_DATA rt_data
+#define RUNTIME_DATA data
 
 #define SET_MARK() \
     { setjmp(RUNTIME_DATA->mark); }
@@ -37,8 +35,8 @@ typedef sRuntimeData* pRuntimeData;
 #define SET_SCEDULER(p_rt) \
     { setjmp(p_rt->scheduler); }
 
-#define SWITCH(next)                                       \
-    {                                                      \
+#define SWITCH(next)                         \
+    {                                        \
         RUNTIME_DATA->next_interface = next; \
         longjmp(RUNTIME_DATA->scheduler, 0); \
     }
@@ -46,10 +44,10 @@ typedef sRuntimeData* pRuntimeData;
 #define SET_MAIN(where) \
     { RUNTIME_DATA->main_interface = where; }
 
-#define GOTO_MAIN()                                        \
-    {                                                      \
-        RUNTIME_DATA->main_interface = next; \
-        longjmp(RUNTIME_DATA->scheduler, 0); \
+#define GOTO_MAIN()                                                  \
+    {                                                                \
+        RUNTIME_DATA->next_interface = RUNTIME_DATA->main_interface; \
+        longjmp(RUNTIME_DATA->scheduler, 0);                         \
     }
 
 #define INPUT(dst, len, callback)                                        \
