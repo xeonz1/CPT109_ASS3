@@ -45,7 +45,6 @@ DECLARE_MAP_CMP(IndexTreeIdCompare);
 typedef struct IndexTree {
     pTreeNode root;
     int item_index;
-    pTreeNode data_tail;
     PriorityCmp maintain_cmp;
     PriorityCmp query_cmp;
 } sIndexTree;

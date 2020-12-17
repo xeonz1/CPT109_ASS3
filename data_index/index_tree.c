@@ -9,8 +9,15 @@ pIndexTree CreateIndexTree(int item_index, PriorityCmp maintain_cmp,
     new_index_tree->maintain_cmp = maintain_cmp;
     new_index_tree->root = NULL;
     new_index_tree->item_index = item_index;
-    new_index_tree->data_tail = NULL;
     return new_index_tree;
+}
+
+pTreeNode IndexTreeBegin(pIndexTree index_tree) {
+    pTreeNode current;
+    while (current->left != NULL) {
+        current = current->left;
+    }
+    return current;
 }
 
 void DestructIndexTree(void* index_tree) {
@@ -36,15 +43,7 @@ void RedirectIndexTo(pIndexTree index_tree, pDataBlockContainer _old,
 }
 void LoadIndexToIndexTree(pIndexTree index_tree, pDataBlockContainer key) {
     InsertNode(&(index_tree->root), key, index_tree->maintain_cmp);
-    if (index_tree->data_tail == NULL)
-        index_tree->data_tail = index_tree->root;
-    else if (index_tree->data_tail->succ != NULL)
-        index_tree->data_tail = index_tree->data_tail->succ;
 }
 void UnloadIndexFromIndexTree(pIndexTree index_tree, pDataBlockContainer key) {
-    if (index_tree->data_tail != NULL) {
-        if (index_tree->data_tail->key = key)
-            index_tree->data_tail = index_tree->data_tail->pred;
-    }
     RemoveNodeFromRoot(&(index_tree->root), key, index_tree->maintain_cmp);
 }

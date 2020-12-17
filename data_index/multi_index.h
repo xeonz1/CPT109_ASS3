@@ -1,8 +1,8 @@
 #ifndef __MULTI_INDEX__
 #define __MULTI_INDEX__
 
-#include "mapping_tree.h"
 #include "data_struct.h"
+#include "mapping_tree.h"
 
 typedef struct MultiIndexCache {
     int data_item_size;
@@ -21,21 +21,20 @@ void CacheWriteLog(pMultiIndexCache db, char op, ...);
 void UploadNewDataBlockToCache(pMultiIndexCache db, pDataBlockContainer key);
 void RemoveDataBlockFromCache(pMultiIndexCache db, pDataBlockContainer key);
 pDataBlockContainer SearchDataBlockInCache(pMultiIndexCache db,
-                                          const int id_index, char* id,
-                                          const int item_index,
-                                          const char* key);
+                                           const int id_index, char* id,
+                                           const int item_index,
+                                           const char* key);
 void UpdateDataBlockInCache(pMultiIndexCache db, pDataBlockContainer new_key,
-                            pDataBlockContainer old_key,
-                            int changed_index);
+                            pDataBlockContainer old_key, int changed_index);
 pMultiIndexCache CreateNewCache(const char* dir, int item_number);
 void InitializeCache(pMultiIndexCache db,
                      ConstructDataBlockContainer constructor);
 void CloseCache(pMultiIndexCache db);
 
 void CreateNewIndex(pMultiIndexCache db, char* id, int id_index, int item_index,
-    PriorityCmp maintain_cmp, PriorityCmp query_cmp);
+                    PriorityCmp maintain_cmp, PriorityCmp query_cmp);
 
-void GetDataOfId(pMultiIndexCache db);
+pTreeNode GetDataOfId(pMultiIndexCache db, const int id_index, char* id, int ordered_item_index);
 void ClearDataOfIdInCache(pMultiIndexCache db, int id, char* text);
 
 void example_initalize_cache();
