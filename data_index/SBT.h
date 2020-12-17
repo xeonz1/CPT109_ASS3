@@ -6,6 +6,7 @@ typedef struct SizeBalancedTree {
     void* key;
     struct SizeBalancedTree* left;
     struct SizeBalancedTree* right;
+    struct SizeBalancedTree* parent;
     struct SizeBalancedTree* succ;
     struct SizeBalancedTree* pred;
     int size;
@@ -22,11 +23,11 @@ typedef int (*PriorityCmp)(const void* a, const void* b);
 
 void DestructTree(pTreeNode target);
 
-void InsertNode(pTreeNode* target, void* key, PriorityCmp cmp);
+void InsertNodeFromRoot(pTreeNode* target, void* key, PriorityCmp cmp);
 
-void RemoveDirectly(pTreeNode* root);
+pTreeNode RemoveDirectly(pTreeNode root);
 
-void RemoveNodeFromRoot(pTreeNode* root, const void* key, PriorityCmp cmp);
+void RemoveNodeByKey(pTreeNode* root, const void* key, PriorityCmp cmp);
 
 pTreeNode FindTreeOfKey(pTreeNode current, const void* key, PriorityCmp cmp);
 pTreeNode FindFirstTreeOfKey(pTreeNode current, const void* key, PriorityCmp cmp);

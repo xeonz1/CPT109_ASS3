@@ -45,6 +45,7 @@ pTreeNode GetMapOf(const void* id, pMapContainer mapping);
 pTreeNode GetNextMappingOf(const void* id, pMapContainer mapping,
                            pTreeNode last);
 void RemoveMap(pMapContainer mapping, pTreeNode last);
+void UnloadMap(pMapContainer mapping, pTreeNode last);
 void AddNewMap(void* id, void* val, pMapContainer mapping);
 
 #endif

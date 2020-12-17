@@ -62,7 +62,7 @@ void example_initalize_cache() {
     } while (!feof(db_file));
     fclose(db_file);*/
     InitializeCache(db, dbc_constructor);
-    /*buffer = CreateNewDataBlockContainer(3);
+    buffer = CreateNewDataBlockContainer(3);
     buffer->item[0] = (char*)malloc(MAXIMUM_CHAR_LENGTH(10));
     buffer->item[1] = (char*)malloc(MAXIMUM_CHAR_LENGTH(10));
     buffer->item[2] = (char*)malloc(MAXIMUM_CHAR_LENGTH(3));
@@ -74,31 +74,26 @@ void example_initalize_cache() {
     strcpy(buffer->item[1], searched->item[1]);
     strcpy(buffer->item[2], "409");
     UpdateDataBlockInCache(db, buffer, searched, 1<<2);
-    searched = SearchDataBlockInCache(db, 0, "wkttud", 1, "dszz5gxx7j");
+    /*searched = SearchDataBlockInCache(db, 0, "wkttud", 1, "dszz5gxx7j");
     searched = SearchDataBlockInCache(db, 2, "209", 1, "dszz5gxx7j");
     searched = SearchDataBlockInCache(db, 2, "409", 1, "dszz5gxx7j");
     searched = SearchDataBlockInCache(db, 0, "wkttud", 2, "209");
-    searched = SearchDataBlockInCache(db, 0, "wkttud", 2, "409");
-    RemoveDataBlockFromCache(db, searched);
-    searched = SearchDataBlockInCache(db, 0, "wkttud", 2, "409");
-    searched = SearchDataBlockInCache(db, 0, "wkttud", 1, "dszz5gxx7j");*/
-    /* ClearDataOfIdInCache(db, 0, "wkttud");*/
+    searched = SearchDataBlockInCache(db, 0, "wkttud", 2, "409"); */
+
+    /* RemoveDataBlockFromCache(db, searched);
+    searched = SearchDataBlockInCache(db, 0, "wkttud", 2, "209");
+    searched = SearchDataBlockInCache(db, 0, "wkttud", 1, "dszz5gxx7j");
+    ClearDataOfIdInCache(db, 0, "wkttud");
     searched = SearchDataBlockInCache(db, -1, NULL, 1, "dszz5gxx7j");
     searched = SearchDataBlockInCache(db, 0, "wkttud", 1, "dszz5gxx7j");
-    /*RemoveDataBlockFromCache(db, searched);*/
+    RemoveDataBlockFromCache(db, searched);*/
     ClearDataOfIdInCache(db, 0, "wkttud");
     searched = SearchDataBlockInCache(db, -1, NULL, 1, "dszz5gxx7j");
     CloseCache(db);
     return;
 }
 int main() {
-    sDate d;
-    int cnt = 1000;
-    d = GetCurrentDate();
-    while (cnt--) {
-        printf("%s\n", GetTimeStamp());
-    }
 
-    /*example_initalize_cache();*/
+    example_initalize_cache();
     return 0;
 }

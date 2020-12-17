@@ -16,166 +16,181 @@ void DestructTree(pTreeNode target) {
     if (target->right != NULL) DestructTree(target->right);
     free(target);
 }
-void LeftRotate(pTreeNode* target) {
-    pTreeNode previous_son = (*target)->right;
-    if (previous_son == NULL) return;
-    (*target)->right = previous_son->left;
-    previous_son->left = (*target);
-    previous_son->size = (*target)->size;
-    (*target)->size = getsize((*target)->left) + getsize((*target)->right) + 1;
-    (*target) = previous_son;
+void LeftRotate(pTreeNode target) {
+    pTreeNode previous_son = target->right;
+    target->right = previous_son->left;
+    if (previous_son->left != NULL) previous_son->left->parent = target;
+    previous_son->left = target;
+    previous_son->parent = target->parent;
+    if (target->parent != NULL) {
+        if (target == target->parent->left)
+            target->parent->left = previous_son;
+        else
+            target->parent->right = previous_son;
+    }
+    previous_son->size = target->size;
+    target->parent = previous_son;
+    target->size = getsize(target->left) + getsize(target->right) + 1;
 }
 
-void RightRotate(pTreeNode* target) {
-    pTreeNode previous_son = (*target)->left;
-    if (previous_son == NULL) return;
-    (*target)->left = previous_son->right;
-    previous_son->right = (*target);
-    previous_son->size = (*target)->size;
-    (*target)->size = getsize((*target)->left) + getsize((*target)->right) + 1;
-    (*target) = previous_son;
+void RightRotate(pTreeNode target) {
+    pTreeNode previous_son = target->left;
+    target->left = previous_son->right;
+    if (previous_son->right != NULL) previous_son->right->parent = target;
+    previous_son->right = target;
+    previous_son->parent = target->parent;
+    if (target->parent != NULL) {
+        if (target == target->parent->right)
+            target->parent->right = previous_son;
+        else
+            target->parent->left = previous_son;
+    }
+    previous_son->size = target->size;
+    target->parent = previous_son;
+    target->size = getsize(target->right) + getsize(target->left) + 1;
 }
 
-void MaintainTree(pTreeNode* target, unsigned char flag) {
-    if ((*target) == NULL) return;
+void MaintainTree(pTreeNode target, unsigned char flag) {
+    if (target == NULL) return;
     if (flag == 0) {
-        if ((*target)->left == NULL) return;
-        if (getsize((*target)->left->left) > getsize((*target)->right))
+        if (target->left == NULL) return;
+        if (getsize(target->left->left) > getsize(target->right)) {
             RightRotate(target);
-        else if (getsize((*target)->left->right) > getsize((*target)->right)) {
-            LeftRotate(&((*target)->left));
+        } else if (getsize(target->left->right) > getsize(target->right)) {
+            LeftRotate(target->left);
             RightRotate(target);
         } else
             return;
     } else {
-        if ((*target)->right == NULL) return;
-        if (getsize((*target)->right->right) > getsize((*target)->left))
+        if (target->right == NULL) return;
+        if (getsize(target->right->right) > getsize(target->left)) {
             LeftRotate(target);
-        else if (getsize((*target)->right->left) > getsize((*target)->left)) {
-            RightRotate(&((*target)->right));
+        } else if (getsize(target->right->left) > getsize(target->left)) {
+            RightRotate(target->right);
             LeftRotate(target);
         } else
             return;
     }
-    MaintainTree(&((*target)->left), 0);
-    MaintainTree(&((*target)->right), 1);
+    /*switch to current root*/
+    if (target->parent != NULL) target = target->parent;
+    MaintainTree(target->left, 0);
+    MaintainTree(target->right, 1);
     MaintainTree(target, 1);
     MaintainTree(target, 0);
 }
 
-void InsertNode(pTreeNode* target, void* key, PriorityCmp cmp) {
-    if (*target == NULL) {
-        *target = (pTreeNode)malloc(sizeof(sTreeNode));
-        (*target)->left = NULL;
-        (*target)->pred = NULL;
-        (*target)->succ = NULL;
-        (*target)->right = NULL;
-        (*target)->size = 1;
-        (*target)->key = key;
+void InsertNode(pTreeNode target, void* key, PriorityCmp cmp);
+
+void InsertNodeFromRoot(pTreeNode* root, void* key, PriorityCmp cmp) {
+    if (*root == NULL) {
+        *root = (pTreeNode)malloc(sizeof(sTreeNode));
+        (*root)->left = NULL;
+        (*root)->pred = NULL;
+        (*root)->succ = NULL;
+        (*root)->right = NULL;
+        (*root)->parent = NULL;
+        (*root)->size = 1;
+        (*root)->key = key;
     } else {
-        (*target)->size++;
-        if (cmp(key, (*target)->key) == -1) {
-            InsertNode(&((*target)->left), key, cmp);
-            if ((*target)->left->size == 1) {
-                (*target)->left->succ = (*target);
-                (*target)->left->pred = (*target)->pred;
-                if ((*target)->pred != NULL)
-                    (*target)->pred->succ = (*target)->left;
-                (*target)->pred = (*target)->left;
-            }
-            MaintainTree(target, 0);
+        InsertNode(*root, key, cmp);
+        /*update root*/
+        while ((*root)->parent != NULL) (*root) = (*root)->parent;
+    }
+}
+
+void InsertNode(pTreeNode target, void* key, PriorityCmp cmp) {
+    target->size++;
+    if (cmp(key, target->key) == -1) {
+        if (target->left == NULL) {
+            InsertNodeFromRoot(&(target->left), key, cmp);
+            target->left->parent = target;
+            target->left->succ = target;
+            target->left->pred = target->pred;
+            if (target->pred != NULL) target->pred->succ = target->left;
+            target->pred = target->left;
         } else {
-            InsertNode(&((*target)->right), key, cmp);
-            if ((*target)->right->size == 1) {
-                (*target)->right->pred = (*target);
-                (*target)->right->succ = (*target)->succ;
-                if ((*target)->succ != NULL)
-                    (*target)->succ->pred = (*target)->right;
-                (*target)->succ = (*target)->right;
-            }
+            InsertNode(target->left, key, cmp);
+            MaintainTree(target, 0);
+        }
+    } else {
+        if (target->right == NULL) {
+            InsertNodeFromRoot(&(target->right), key, cmp);
+            target->right->parent = target;
+            target->right->pred = target;
+            target->right->succ = target->succ;
+            if (target->succ != NULL) target->succ->pred = target->right;
+            target->succ = target->right;
+        } else {
+            InsertNode(target->right, key, cmp);
             MaintainTree(target, 1);
         }
     }
 }
 
-static void ReplaceByPredecessor(pTreeNode root) {
-    if (root->pred->right == root) {
-        root->pred->succ = root->succ;
-        root->pred->right = root->right;
-        if (root->succ != NULL) root->succ->pred = root->pred;
-        free(root);
-    } else {
-        root->key = root->pred->key;
-        if (root->pred->pred != NULL)
-            ReplaceByPredecessor(root->pred);
-        else { /*must be left of root, and it must be the head and leaf node*/
-            root->pred = NULL;
-            free(root->left);
-            root->left = NULL;
+pTreeNode RemoveDirectly(pTreeNode root) {
+    pTreeNode target;
+    /*maintain list*/
+    if (root->succ != NULL) root->succ->pred = root->pred;
+    if (root->pred != NULL) root->pred->succ = root->succ;
+    if (root->right != NULL) {
+        target = root->right;
+        while (target->left != NULL) {
+            target->size--;
+            target = target->left;
         }
+        /*maintain the replaced location*/
+        if (root->left != NULL) root->left->parent = target;
+        if (root->parent != NULL) {
+            if (root->parent->left == root) root->parent->left = target;
+            else root->parent->right = target;
+        }
+        target->left = root->left;
+        if (target != root->right) {
+            /*maintain sub successor locally*/
+            if (target->right != NULL) target->right->parent = target->parent;
+            target->parent->left = target->right;
+            /*replaced location*/
+            target->right = root->right;
+            root->right->parent = target;
+            target->size = getsize(root->left) + getsize(root->right) + 1;
+        } else
+            target->size += getsize(root->left);
+        target->parent = root->parent;
+    } else {
+        target = root->left;
+        if (root->parent != NULL) {
+            if (root->parent->left == root) root->parent->left = target;
+            else root->parent->right = target;
+        }
+        if(target != NULL) target->parent = root->parent;
     }
+    free(root);
+    /*return new root*/
+    return target;
 }
 
-static void ReplaceBySuccessor(pTreeNode root) {
-    if (root->succ->left == root) {
-        root->succ->pred = root->pred;
-        root->succ->left = root->left;
-        if (root->pred != NULL) root->pred->succ = root->succ;
-        free(root);
-    } else {
-        root->key = root->succ->key;
-        if (root->succ->succ != NULL)
-            ReplaceBySuccessor(root->succ);
-        else { /*must be right of root, and it must be the tail and leaf node*/
-            root->succ = NULL;
-            free(root->right);
-            root->right = NULL;
-        }
-    }
-}
-
-static void RemoveNode(pTreeNode root, const void* key, PriorityCmp cmp) {
-    while (root != NULL) {
-        root->size--;
-
-        switch (cmp(key, root->key)) {
-            case 0:
-                if (root->pred != NULL) /*replace by value*/
-                    ReplaceByPredecessor(root);
-                else
-                    ReplaceBySuccessor(root);
-                /*root must have at least one of pred or succ*/
-                /*if not, it must be the single root of the whole tree, and
-                 * should be dealt by RemoveNodeFromRoot*/
-                return;
+void RemoveNodeByKey(pTreeNode* root, const void* key, PriorityCmp cmp) {
+    pTreeNode current;
+    current = *root;
+    while (current != NULL) {
+        current->size--;
+        switch (cmp(key, current->key)) {
             case 1:
-                root = root->right;
+                current = current->right;
                 break;
             case -1:
-                root = root->left;
+                current = current->left;
                 break;
+            case 0:
+                if (current == *root) {
+                    *root = RemoveDirectly(current);
+                    return;
+                } else {
+                    RemoveDirectly(current);
+                    return;
+                }
         }
     }
-}
-
-void RemoveDirectly(pTreeNode* root) {
-    if ((*root)->size == 1 && (*root)->pred == NULL && (*root)->succ == NULL) {
-        free(*root);
-        *root = NULL;
-    } else if ((*root)->pred != NULL) /*replace by value*/
-        ReplaceByPredecessor(*root);
-    else
-        ReplaceBySuccessor(*root);
-}
-
-void RemoveNodeFromRoot(pTreeNode* root, const void* key, PriorityCmp cmp) {
-    if ((*root)->size == 1) {
-        if (cmp(key, (*root)->key) == 0) {
-            free(*root);
-            *root = NULL;
-        }
-    } else
-        RemoveNode(*root, key, cmp);
 }
 
 pTreeNode FindTreeOfKey(pTreeNode current, const void* key, PriorityCmp cmp) {
@@ -189,8 +204,6 @@ pTreeNode FindTreeOfKey(pTreeNode current, const void* key, PriorityCmp cmp) {
                 break;
             case 0:
                 return current;
-            default:
-                system("pause");
         }
     }
     return NULL;

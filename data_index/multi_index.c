@@ -95,7 +95,7 @@ pTreeNode GetDataOfId(pMultiIndexCache db, const int id_index, char* id,
 
 void ClearDataOfIdInCache(pMultiIndexCache db, int id, char* text) {
     TmpIndexTreeId tmp_id;
-    pTreeNode mapping_tree_node, last_mapping;
+    pTreeNode mapping_tree_node, last_mapping, cur, tmp;
     char flag;
     pIndexTree index_tree;
     tmp_id = CreateTmpIndexTreeId(text, id, -1);
@@ -111,23 +111,27 @@ void ClearDataOfIdInCache(pMultiIndexCache db, int id, char* text) {
             else /*get last mapping*/
                 break;
         } while (1);
-        /*remove all the data on the index tree*/
         index_tree = GET_INDEX(last_mapping);
-
+        UnloadMap(db->id_to_index_tree_mapping, last_mapping);
+        /*remove all the data on the index tree*/
         if (db->log_enable) {
             db->log_enable = 0;
             flag = 1;
         } else /*close log temporarily*/
             flag = 0;
 
-        if (index_tree->root != NULL) {
-            /*delete all the data on the index tree*/
-            while (index_tree->root != NULL) {
-                RemoveDataBlockFromCache(db, index_tree->root->key);
+        cur = IndexTreeBegin(index_tree);
+        if (cur->succ != NULL) {
+            while (cur->succ != NULL) {
+                cur = cur->succ;
+                RemoveDataBlockFromCache(db, cur->pred->key);
             }
-            /*lastly, destruct the map*/
-            RemoveMap(db->id_to_index_tree_mapping, last_mapping);
+            RemoveDataBlockFromCache(db, cur->key);
+        } else {
+            RemoveDataBlockFromCache(db, cur->key);
         }
+        DestructIndexTree(index_tree);
+
         /*if the log was open, reopen it now*/
         if (flag) db->log_enable = 1;
         if (db->log_enable) CacheWriteLog(db, 'c', id, text);
@@ -142,6 +146,25 @@ void UpdateDataBlockInCache(pMultiIndexCache db, pDataBlockContainer new_key,
     pIndexTree cur_index_tree;
     for (cnt = 0; cnt < old_key->item_number; cnt++) {
         /*enumerate possible id index*/
+        /*general*/
+        tmp_id = CreateTmpIndexTreeId(NULL, -1, cnt);
+        mapping_tree_node = GetMapOf(&tmp_id, db->id_to_index_tree_mapping);
+        /*general dont care about id, enumerated cnt is the item index they
+         * care about*/
+        if (mapping_tree_node != NULL) {
+            cur_index_tree = GET_INDEX(mapping_tree_node);
+            if (mapping_tree_node != NULL) {
+                if ((changed_index & (1 << cnt))) {
+                    UnloadIndexFromIndexTree(cur_index_tree, old_key);
+                    LoadIndexToIndexTree(cur_index_tree, new_key);
+                } else {
+                    /*if they do not care about that changed item, just redirect
+                     * them to the new data block container*/
+                    RedirectIndexTo(cur_index_tree, old_key, new_key);
+                }
+            }
+        }
+
         if (!(changed_index & (1 << cnt))) {
             /*if it was not changed*/
             /*then it is still in those trees of this id*/

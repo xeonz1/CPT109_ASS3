@@ -13,11 +13,12 @@ pIndexTree CreateIndexTree(int item_index, PriorityCmp maintain_cmp,
 }
 
 pTreeNode IndexTreeBegin(pIndexTree index_tree) {
-    pTreeNode current;
-    while (current->left != NULL) {
-        current = current->left;
+    pTreeNode cur;
+    cur = index_tree->root;
+    while (cur->left != NULL) {
+        cur = cur->left;
     }
-    return current;
+    return cur;
 }
 
 void DestructIndexTree(void* index_tree) {
@@ -42,8 +43,8 @@ void RedirectIndexTo(pIndexTree index_tree, pDataBlockContainer _old,
     if (tmp != NULL) tmp->key = _new;
 }
 void LoadIndexToIndexTree(pIndexTree index_tree, pDataBlockContainer key) {
-    InsertNode(&(index_tree->root), key, index_tree->maintain_cmp);
+    InsertNodeFromRoot(&(index_tree->root), key, index_tree->maintain_cmp);
 }
 void UnloadIndexFromIndexTree(pIndexTree index_tree, pDataBlockContainer key) {
-    RemoveNodeFromRoot(&(index_tree->root), key, index_tree->maintain_cmp);
+    RemoveNodeByKey(&(index_tree->root), key, index_tree->maintain_cmp);
 }

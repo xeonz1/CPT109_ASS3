@@ -36,15 +36,22 @@ void RemoveMap(pMapContainer mapping, pTreeNode last) {
     mapping->id_destructor(((pMap)last->key)->id);
     mapping->val_destructor(((pMap)last->key)->val);
     if (last == mapping->root) {
-        RemoveDirectly(&mapping->root);
+        mapping->root = RemoveDirectly(mapping->root);
     } else
-        RemoveDirectly(&last);
+        RemoveDirectly(last);
+}
+
+void UnloadMap(pMapContainer mapping, pTreeNode last) {
+    if (last == mapping->root) {
+        mapping->root = RemoveDirectly(mapping->root);
+    } else
+        RemoveDirectly(last);
 }
 
 void AddNewMap(void* id, void* val, pMapContainer mapping) {
     pMap new_map;
     new_map = CreateNewMap(id, val);
-    InsertNode(&(mapping->root), new_map, mapping->maintain_cmp);
+    InsertNodeFromRoot(&(mapping->root), new_map, mapping->maintain_cmp);
 }
 
 void DestructMapContainer(pMapContainer mapping) {
