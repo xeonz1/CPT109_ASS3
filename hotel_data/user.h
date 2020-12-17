@@ -18,6 +18,8 @@ typedef sUser* pUser;
 #define USER_TYPE_INDEX 1
 #define USER_PASSWORD_INDEX 2
 
+#define USER_MANAGER_STRING "#"
+#define USER_RECEPTIONIST_STRING "*"
 
 pDataBlockContainer CreateUserDataBlock();
 

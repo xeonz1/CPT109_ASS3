@@ -46,6 +46,148 @@ void interface_StartPage(pRuntimeData data) {
 #undef OUTPUT_NAME
 }
 
+void interface_Register(pRuntimeData data) {
+#define OUTPUT_NAME "Register"
+    sUser registered_account, authority;
+    pDataBlockContainer found_user_db;
+    static char input_buffer[maximum_name_length + 1];
+    fpos_t begin, end;
+    SET_MARK();
+    /*for user name*/
+    system("cls");
+    NORMAL_INFO(
+        "Please input user name with only letters, number and "
+        "underline");
+    ATTEMP(GetInput(registered_account.username, maximum_name_length,
+                    PredefinedInputCheckNormal));
+    if (DataCheck(USER_LIST_DIR) == DATA_PASSED) {
+        switch (DataBlockLocate(USER_LIST_DIR, USER_ID_INDEX,
+                                registered_account.username, &begin, &end)) {
+            case DATA_PASSED:
+                ERROR_INFO("Account exists!");
+                JUMP_TO_MARK();
+            case DATA_UNOPENED:
+            case DATA_BROKEN:
+                ERROR_INFO("User list corrupted please check manually!")
+                JUMP_TO(interface_StartPage);
+            case DATA_NON_EXIST:
+                break;
+        }
+    }
+    SET_MARK();
+    /*for password*/
+    system("cls");
+    printf("******Hello, %s******\n", registered_account.username);
+    NORMAL_INFO(
+        "Please input user password with only letters, "
+        "number and underline.");
+    ATTEMP(GetInput(registered_account.password, maximum_password_length,
+                    PredefinedInputCheckNormal));
+    NORMAL_INFO("Please confirm your password");
+    ATTEMP(GetInput(input_buffer, maximum_password_length, NULL));
+    if (!strcmp(registered_account.password, input_buffer)) {
+        INPUT_PROMPT("Are you a receptionist or manager?(r/m)");
+        INPUT(input_buffer, 1, NULL);
+        switch (input_buffer[0]) {
+            case 'r':
+                registered_account.type = USER_RECEPTIONIST;
+            case 'm':
+                /*must be authorized by another manager(if exits)*/
+                switch (DataBlockLocate(USER_LIST_DIR, USER_TYPE_INDEX,
+                                        USER_MANAGER_STRING, &begin, &end)) {
+                    case DATA_PASSED:
+                        /*found manager*/
+                        SET_MARK();
+                        system("cls");
+                        NORMAL_INFO("A manager is required to authorize.")
+                        /*managers exist, ask to authorize*/
+                        INPUT_PROMPT("manager user id");
+                        INPUT(input_buffer, maximum_name_length,
+                              PredefinedInputCheckNormal);
+                        switch (DataBlockLocate(USER_LIST_DIR, USER_ID_INDEX,
+                                                input_buffer, &begin, &end)) {
+                            case DATA_UNOPENED:
+                            case DATA_BROKEN:
+                                ERROR_INFO("check user list status!");
+                                SWITCH(interface_StartPage);
+                            case DATA_NON_EXIST:
+                                ERROR_INFO("user non exist!");
+                                GOTO_MARK();
+                            case DATA_PASSED:
+                                /*input manager id exists*/
+                                found_user_db = CreateUserDataBlock();
+                                /*obtain manager user info*/
+                                switch (DataBlockParse(
+                                    USER_LIST_DIR, begin, end,
+                                    found_user_db->item,
+                                    found_user_db->item_number)) {
+                                    case DATA_UNOPENED:
+                                    case DATA_BROKEN:
+                                        DestructDataBlockContainer(
+                                            found_user_db);
+                                        ERROR_INFO("check user list status!");
+                                        SWITCH(interface_StartPage);
+                                    case DATA_PASSED:
+                                        UserRead(&authority, found_user_db);
+                                        DestructDataBlockContainer(
+                                            found_user_db);
+                                        break;
+                                }
+                                break;
+                        }
+                        INPUT_PROMPT("manager user password");
+                        INPUT(input_buffer, maximum_password_length,
+                              PredefinedInputCheckNormal);
+                        if (!strcmp(input_buffer, authority.password)) {
+                            NORMAL_INFO("authorized");
+                            Delay(1000);
+                            break;
+                        } else {
+                            ERROR_INFO("password incorrect");
+                            GOTO_MARK();
+                        }
+                    case DATA_UNOPENED:
+                    case DATA_BROKEN:
+                        ERROR_INFO("User list corrupted please check manually!")
+                        JUMP_TO(interface_StartPage);
+                    case DATA_NON_EXIST:
+                        /*no manager*/
+                        break;
+                }
+                registered_account.type = USER_MANAGER;
+                break;
+            default:
+                ERROR_INFO("input must be r or m!");
+                GOTO_MARK();
+        }
+
+        SET_MARK();
+
+        /*ask for next step*/
+        system("cls");
+        NORMAL_INFO("User Registered.");
+        NORMAL_INFO(
+            "Do you want to directly login or go back to "
+            "start?(l/s)");
+        ATTEMP(GetInput(input_buffer, 1, NULL));
+        switch (input_buffer[0]) {
+            case 'l':
+                memcpy(&(data->user), &registered_account, sizeof(sUser));
+                JUMP_TO(interface_UserCenter);
+            case 's':
+                JUMP_TO(interface_StartPage);
+            default:
+                ERROR_INFO("Input must be l or s!");
+                JUMP_TO_MARK();
+        }
+    } else {
+        /*confirm failed*/
+        ERROR_INFO("failed to confirm.");
+        JUMP_TO_MARK();
+    }
+#undef OUTPUT_NAME
+}
+
 void interface_Login(pRuntimeData data) {
     static char input_buffer[maximum_name_length + 1];
     fpos_t begin, end;
